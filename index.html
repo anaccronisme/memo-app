@@ -69,9 +69,10 @@
             min-height: 100dvh;
             margin: 0;
             padding: 20px;
+            padding-top: 60px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             background: transparent;
         }
         
@@ -321,24 +322,6 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.35);
         }
         
-        .btn-notion {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            color: var(--text-primary);
-            border: 1px solid var(--glass-border);
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            .btn-notion {
-                background: rgba(255, 255, 255, 0.1);
-            }
-        }
-        
-        .btn-notion:hover {
-            background: rgba(255, 255, 255, 0.35);
-        }
-        
         .status {
             position: relative;
             z-index: 1;
@@ -442,6 +425,22 @@
             50% { opacity: 0.7; }
         }
 
+        .notion-link {
+            position: relative;
+            z-index: 1;
+            display: block;
+            margin-top: 18px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .notion-link:hover {
+            color: var(--text-primary);
+            text-decoration: underline;
+        }
+
         .footer {
             position: relative;
             z-index: 1;
@@ -483,11 +482,9 @@
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
 
-        <div class="button-row">
-            <button class="action-btn btn-notion" onclick="openInNotion()">Ouvrir dans Notion</button>
-        </div>
-        
         <div class="status" id="status"></div>
+
+        <a href="#" class="notion-link" id="notionLink" onclick="openInNotion(); return false;">Ouvrir dans Notion</a>
 
         <footer class="footer">Vibe Codé par Anthony</footer>
     </div>
