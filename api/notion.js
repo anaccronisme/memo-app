@@ -219,6 +219,51 @@ export default async function handler(req, res) {
       }
     }
 
+    // Action: get page content
+    if (action === 'getContent') {
+      if (!pageId) {
+        return res.status(400).json({ error: 'pageId is required' });
+      }
+
+      const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+        method: 'GET',
+        headers
+      });
+      const blocksData = await blocksResponse.json();
+
+      if (blocksData.error) {
+        return res.status(400).json({ error: blocksData.error, message: blocksData.message });
+      }
+
+      // Parse blocks into notes and links
+      const notes = [];
+      const links = [];
+      let currentSection = null;
+
+      for (const block of blocksData.results || []) {
+        if (block.type === 'heading_2') {
+          const text = block.heading_2.rich_text?.[0]?.plain_text || '';
+          if (text === 'Notes') currentSection = 'notes';
+          else if (text === 'Liens') currentSection = 'links';
+          else currentSection = null;
+        } else if (block.type === 'paragraph' && currentSection) {
+          const richText = block.paragraph.rich_text || [];
+          if (richText.length > 0) {
+            const text = richText[0].plain_text || '';
+            const link = richText[0].text?.link?.url || null;
+
+            if (currentSection === 'notes') {
+              notes.push({ text });
+            } else if (currentSection === 'links') {
+              links.push({ text, url: link });
+            }
+          }
+        }
+      }
+
+      return res.status(200).json({ notes, links });
+    }
+
     return res.status(400).json({ error: 'Unknown action' });
 
   } catch (error) {

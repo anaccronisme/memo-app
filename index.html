@@ -388,6 +388,67 @@
                 padding-bottom: max(20px, env(safe-area-inset-bottom));
             }
         }
+
+        .today-content {
+            position: relative;
+            z-index: 1;
+            margin-top: 24px;
+            display: none;
+        }
+
+        .today-content.visible {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 16px;
+        }
+
+        .section h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .item {
+                background: rgba(255, 255, 255, 0.08);
+            }
+        }
+
+        .item a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .item a:hover {
+            text-decoration: underline;
+        }
+
+        .empty-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -419,6 +480,17 @@
         </div>
         
         <div class="status" id="status"></div>
+
+        <div class="today-content" id="todayContent">
+            <div class="section" id="notesSection">
+                <h3>Notes</h3>
+                <div class="items" id="notesList"></div>
+            </div>
+            <div class="section" id="linksSection">
+                <h3>Liens</h3>
+                <div class="items" id="linksList"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -538,6 +610,7 @@
                     statusEl.textContent = '✓ Ajouté à ta note du jour';
                     document.getElementById('content').value = '';
                     document.getElementById('linkUrl').value = '';
+                    loadTodayContent();
                 } else {
                     throw new Error(result.error?.message || 'Échec de l\'ajout');
                 }
@@ -569,6 +642,66 @@
             }
         }
         
+        async function loadTodayContent() {
+            const title = getTodayTitle();
+            const todayContent = document.getElementById('todayContent');
+            const notesList = document.getElementById('notesList');
+            const linksList = document.getElementById('linksList');
+
+            try {
+                // Find today's page
+                let result = await callAPI({ action: 'findPage', title });
+                let pageId = result.pageId;
+
+                if (!pageId) {
+                    todayContent.classList.remove('visible');
+                    return;
+                }
+
+                currentPageId = pageId;
+
+                // Get content
+                result = await callAPI({ action: 'getContent', pageId });
+
+                const { notes, links } = result;
+
+                // Display notes
+                if (notes && notes.length > 0) {
+                    notesList.innerHTML = notes.map(n =>
+                        `<div class="item">${escapeHtml(n.text)}</div>`
+                    ).join('');
+                } else {
+                    notesList.innerHTML = '<div class="empty-message">Aucune note</div>';
+                }
+
+                // Display links
+                if (links && links.length > 0) {
+                    linksList.innerHTML = links.map(l => {
+                        if (l.url) {
+                            return `<div class="item"><a href="${escapeHtml(l.url)}" target="_blank">${escapeHtml(l.text)}</a></div>`;
+                        }
+                        return `<div class="item">${escapeHtml(l.text)}</div>`;
+                    }).join('');
+                } else {
+                    linksList.innerHTML = '<div class="empty-message">Aucun lien</div>';
+                }
+
+                todayContent.classList.add('visible');
+
+            } catch (error) {
+                console.error('Error loading content:', error);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load content on page load
+        loadTodayContent();
+
         document.getElementById('content').focus();
     </script>
 </body>
