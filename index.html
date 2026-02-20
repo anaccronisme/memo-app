@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Note du jour">
@@ -42,7 +42,27 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-        
+
+        html {
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(255, 180, 150, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(150, 180, 255, 0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(200, 150, 255, 0.3) 0%, transparent 60%),
+                linear-gradient(145deg, #e8e0f0 0%, #d0e8f0 50%, #f0e0e8 100%);
+            background-attachment: fixed;
+            min-height: 100%;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            html {
+                background:
+                    radial-gradient(ellipse at 20% 20%, rgba(100, 60, 80, 0.5) 0%, transparent 50%),
+                    radial-gradient(ellipse at 80% 80%, rgba(40, 60, 100, 0.5) 0%, transparent 50%),
+                    radial-gradient(ellipse at 50% 50%, rgba(60, 40, 80, 0.4) 0%, transparent 60%),
+                    linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+            }
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
             min-height: 100vh;
@@ -52,22 +72,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(255, 180, 150, 0.4) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(150, 180, 255, 0.4) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(200, 150, 255, 0.3) 0%, transparent 60%),
-                linear-gradient(145deg, #e8e0f0 0%, #d0e8f0 50%, #f0e0e8 100%);
-            background-attachment: fixed;
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: 
-                    radial-gradient(ellipse at 20% 20%, rgba(100, 60, 80, 0.5) 0%, transparent 50%),
-                    radial-gradient(ellipse at 80% 80%, rgba(40, 60, 100, 0.5) 0%, transparent 50%),
-                    radial-gradient(ellipse at 50% 50%, rgba(60, 40, 80, 0.4) 0%, transparent 60%),
-                    linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
-            }
+            background: transparent;
         }
         
         .container {
