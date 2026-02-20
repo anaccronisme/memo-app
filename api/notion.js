@@ -23,13 +23,33 @@ export default async function handler(req, res) {
     // Action: find today's page
     if (action === 'findPage') {
       const { title } = req.body;
-      
+
+      // First, get database schema to find the title property name
+      const dbResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}`, {
+        method: 'GET',
+        headers
+      });
+      const dbData = await dbResponse.json();
+
+      if (dbData.error) {
+        return res.status(400).json({ error: dbData.error, message: dbData.message });
+      }
+
+      // Find the title property name
+      let titlePropertyName = 'Name';
+      for (const [propName, propValue] of Object.entries(dbData.properties || {})) {
+        if (propValue.type === 'title') {
+          titlePropertyName = propName;
+          break;
+        }
+      }
+
       const response = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           filter: {
-            property: 'title',
+            property: titlePropertyName,
             title: { equals: title }
           },
           page_size: 1
@@ -37,7 +57,11 @@ export default async function handler(req, res) {
       });
 
       const data = await response.json();
-      
+
+      if (data.error) {
+        return res.status(400).json({ error: data.error, message: data.message });
+      }
+
       if (data.results && data.results.length > 0) {
         return res.status(200).json({ pageId: data.results[0].id });
       }
@@ -47,14 +71,34 @@ export default async function handler(req, res) {
     // Action: create today's page
     if (action === 'createPage') {
       const { title } = req.body;
-      
+
+      // First, get database schema to find the title property name
+      const dbResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}`, {
+        method: 'GET',
+        headers
+      });
+      const dbData = await dbResponse.json();
+
+      if (dbData.error) {
+        return res.status(400).json({ error: dbData.error, message: dbData.message });
+      }
+
+      // Find the title property name
+      let titlePropertyName = 'Name';
+      for (const [propName, propValue] of Object.entries(dbData.properties || {})) {
+        if (propValue.type === 'title') {
+          titlePropertyName = propName;
+          break;
+        }
+      }
+
       const response = await fetch('https://api.notion.com/v1/pages', {
         method: 'POST',
         headers,
         body: JSON.stringify({
           parent: { database_id: DATABASE_ID },
           properties: {
-            title: {
+            [titlePropertyName]: {
               title: [{ text: { content: title } }]
             }
           }
@@ -62,11 +106,20 @@ export default async function handler(req, res) {
       });
 
       const data = await response.json();
+
+      if (data.error) {
+        return res.status(400).json({ error: data.error, message: data.message });
+      }
+
       return res.status(200).json({ pageId: data.id });
     }
 
     // Action: append content to page
     if (action === 'appendContent') {
+      if (!pageId) {
+        return res.status(400).json({ success: false, error: { message: 'pageId is required' } });
+      }
+
       let blocks = [];
 
       if (type === 'link' && url) {

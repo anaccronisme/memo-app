@@ -499,15 +499,29 @@
                 
                 // Find today's page
                 let result = await callAPI({ action: 'findPage', title });
+
+                if (result.error) {
+                    throw new Error(result.message || result.error);
+                }
+
                 let pageId = result.pageId;
-                
+
                 // Create if doesn't exist
                 if (!pageId) {
                     statusEl.textContent = 'Création de la note du jour...';
                     result = await callAPI({ action: 'createPage', title });
+
+                    if (result.error) {
+                        throw new Error(result.message || result.error);
+                    }
+
                     pageId = result.pageId;
                 }
-                
+
+                if (!pageId) {
+                    throw new Error('Impossible de créer la page');
+                }
+
                 currentPageId = pageId;
                 
                 // Append content
