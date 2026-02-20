@@ -30,6 +30,8 @@
                 --text-secondary: rgba(255, 255, 255, 0.55);
                 --accent: rgba(255, 214, 10, 1);
                 --accent-glass: rgba(255, 214, 10, 0.3);
+                --success: rgba(50, 215, 75, 1);
+                --error: rgba(255, 69, 58, 1);
             }
         }
         
@@ -172,8 +174,8 @@
         .type-btn.active {
             background: var(--accent-glass);
             border-color: var(--accent);
-            color: rgba(0, 0, 0, 0.8);
-            box-shadow: 
+            color: var(--text-primary);
+            box-shadow:
                 0 4px 16px rgba(255, 204, 0, 0.25),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
@@ -293,9 +295,16 @@
         .btn-primary {
             background: linear-gradient(180deg, #FFD60A 0%, #FFCC00 100%);
             color: rgba(0, 0, 0, 0.85);
-            box-shadow: 
+            box-shadow:
                 0 4px 16px rgba(255, 204, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-primary {
+                background: linear-gradient(180deg, #FFD60A 0%, #FFCC00 100%);
+                color: rgba(0, 0, 0, 0.9);
+            }
         }
         
         .btn-primary:hover {
@@ -336,9 +345,9 @@
         }
         
         .status.success {
-            background: rgba(52, 199, 89, 0.2);
-            border: 1px solid rgba(52, 199, 89, 0.4);
-            color: var(--success);
+            background: rgba(255, 214, 10, 0.15);
+            border: 1px solid rgba(255, 214, 10, 0.4);
+            color: var(--accent);
             display: block;
         }
         
@@ -352,7 +361,7 @@
         .status.loading {
             background: var(--accent-glass);
             border: 1px solid rgba(255, 204, 0, 0.4);
-            color: rgba(0, 0, 0, 0.8);
+            color: var(--text-primary);
             display: block;
         }
         
