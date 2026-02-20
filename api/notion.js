@@ -111,6 +111,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: data.error, message: data.message });
       }
 
+      if (!data.id) {
+        return res.status(400).json({ error: 'creation_failed', message: 'Page creation failed', details: data });
+      }
+
       return res.status(200).json({ pageId: data.id });
     }
 
