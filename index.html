@@ -482,6 +482,7 @@
         let currentType = 'text';
         let currentPageId = null;
         let isRecording = false;
+        let isVoiceInput = false;
         let recognition = null;
 
         // Speech Recognition setup
@@ -508,6 +509,7 @@
                 const textarea = document.getElementById('content');
                 if (finalTranscript) {
                     textarea.value += finalTranscript + ' ';
+                    isVoiceInput = true;
                 }
             };
 
@@ -695,19 +697,21 @@
                 currentPageId = pageId;
                 
                 // Append content
+                const sendType = (isVoiceInput && currentType === 'text') ? 'voice' : currentType;
                 result = await callAPI({
                     action: 'appendContent',
                     pageId,
                     content,
-                    type: currentType,
+                    type: sendType,
                     url: linkUrl
                 });
-                
+
                 if (result.success) {
                     statusEl.className = 'status success';
                     statusEl.textContent = '✓ Ajouté à ta note du jour';
                     document.getElementById('content').value = '';
                     document.getElementById('linkUrl').value = '';
+                    isVoiceInput = false;
                 } else {
                     throw new Error(result.error?.message || 'Échec de l\'ajout');
                 }
@@ -744,6 +748,9 @@
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendToNotion();
+            } else {
+                // User is typing manually, reset voice flag
+                isVoiceInput = false;
             }
         });
 

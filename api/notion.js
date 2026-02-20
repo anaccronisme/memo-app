@@ -117,6 +117,20 @@ export default async function handler(req, res) {
               heading_2: {
                 rich_text: [{ type: 'text', text: { content: 'Liens' } }]
               }
+            },
+            {
+              object: 'block',
+              type: 'heading_2',
+              heading_2: {
+                rich_text: [{ type: 'text', text: { content: 'Mémos Vocaux' } }]
+              }
+            },
+            {
+              object: 'block',
+              type: 'heading_2',
+              heading_2: {
+                rich_text: [{ type: 'text', text: { content: 'Fichiers' } }]
+              }
             }
           ]
         })
@@ -149,7 +163,9 @@ export default async function handler(req, res) {
       const blocksData = await blocksResponse.json();
 
       // Find the section headers
-      const sectionName = (type === 'link') ? 'Liens' : 'Notes';
+      let sectionName = 'Notes';
+      if (type === 'link') sectionName = 'Liens';
+      else if (type === 'voice') sectionName = 'Mémos Vocaux';
       let sectionBlockId = null;
 
       if (blocksData.results) {
@@ -325,12 +341,34 @@ export default async function handler(req, res) {
             },
             children: [
               { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: 'Notes' } }] } },
-              { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: 'Liens' } }] } }
+              { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: 'Liens' } }] } },
+              { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: 'Mémos Vocaux' } }] } },
+              { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: 'Fichiers' } }] } }
             ]
           })
         });
         const createData = await createResponse.json();
         pageId = createData.id;
+      }
+
+      // Find "Fichiers" section
+      const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+        method: 'GET',
+        headers
+      });
+      const blocksData = await blocksResponse.json();
+
+      let sectionBlockId = null;
+      if (blocksData.results) {
+        for (const block of blocksData.results) {
+          if (block.type === 'heading_2') {
+            const text = block.heading_2.rich_text?.[0]?.plain_text || '';
+            if (text === 'Fichiers') {
+              sectionBlockId = block.id;
+              break;
+            }
+          }
+        }
       }
 
       // Add image to page
@@ -344,11 +382,20 @@ export default async function handler(req, res) {
         }
       };
 
-      const appendResponse = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ children: [imageBlock] })
-      });
+      let appendResponse;
+      if (sectionBlockId) {
+        appendResponse = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ children: [imageBlock], after: sectionBlockId })
+        });
+      } else {
+        appendResponse = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ children: [imageBlock] })
+        });
+      }
 
       if (appendResponse.ok) {
         return res.status(200).json({ success: true, imageUrl });
