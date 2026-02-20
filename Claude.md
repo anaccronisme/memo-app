@@ -1,4 +1,4 @@
-# Memo App
+# Note du jour
 
 Application web pour capturer rapidement des notes et des liens vers une base de données Notion.
 
@@ -14,6 +14,8 @@ Application web pour capturer rapidement des notes et des liens vers une base de
 - Ajout de liens cliquables
 - Organisation automatique avec sections "Notes" et "Liens"
 - Création automatique de la page du jour (format: `YYYY-MM-DD-JourSemaine`)
+- Icône soleil liquid glass pour l'écran d'accueil iPhone
+- Pas d'affichage des notes (confidentialité - écriture seule)
 
 ## Variables d'environnement (Vercel)
 
