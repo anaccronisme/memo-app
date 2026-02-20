@@ -127,12 +127,21 @@ export default async function handler(req, res) {
       let blocks = [];
 
       if (type === 'link' && url) {
+        // Create a paragraph with a clickable link
+        const linkText = content || url;
         blocks.push({
           object: 'block',
-          type: 'bookmark',
-          bookmark: {
-            url: url,
-            caption: content ? [{ type: 'text', text: { content: content } }] : []
+          type: 'paragraph',
+          paragraph: {
+            rich_text: [
+              {
+                type: 'text',
+                text: {
+                  content: linkText,
+                  link: { url: url }
+                }
+              }
+            ]
           }
         });
       } else {
