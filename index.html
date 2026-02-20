@@ -468,7 +468,7 @@
                 <input type="url" id="linkUrl" placeholder="https://...">
             </div>
             
-            <textarea id="content" placeholder="Qu'est-ce que tu veux noter ?"></textarea>
+            <textarea id="content" placeholder="Qu'est-ce que tu veux noter ?" autofocus enterkeyhint="send"></textarea>
         </div>
         
         <div class="button-row">
@@ -698,6 +698,14 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // Send on Enter key (without Shift)
+        document.getElementById('content').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendToNotion();
+            }
+        });
 
         // Load content on page load
         loadTodayContent();
