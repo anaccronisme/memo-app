@@ -401,6 +401,46 @@
             }
         }
 
+        .secondary-actions {
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            font-size: 14px;
+            padding: 12px 16px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-secondary {
+                background: rgba(255, 255, 255, 0.08);
+            }
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary.recording {
+            background: rgba(255, 59, 48, 0.3);
+            border-color: rgba(255, 59, 48, 0.6);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .btn-icon {
+            margin-right: 4px;
+        }
+
     </style>
 </head>
 <body>
@@ -426,7 +466,17 @@
         <div class="button-row">
             <button class="action-btn btn-primary" id="sendBtn" onclick="sendToNotion()">Envoyer</button>
         </div>
-        
+
+        <div class="button-row secondary-actions">
+            <button class="action-btn btn-secondary" id="dictateBtn" onclick="toggleDictation()">
+                <span class="btn-icon">🎤</span> Dicter
+            </button>
+            <button class="action-btn btn-secondary" id="fileBtn" onclick="selectFile()">
+                <span class="btn-icon">📎</span> Fichier
+            </button>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+
         <div class="button-row">
             <button class="action-btn btn-notion" onclick="openInNotion()">Ouvrir dans Notion</button>
         </div>
@@ -439,7 +489,122 @@
         
         let currentType = 'text';
         let currentPageId = null;
-        
+        let isRecording = false;
+        let recognition = null;
+
+        // Speech Recognition setup
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'fr-FR';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                let interimTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript = transcript;
+                    }
+                }
+
+                const textarea = document.getElementById('content');
+                if (finalTranscript) {
+                    textarea.value += finalTranscript + ' ';
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                stopDictation();
+            };
+
+            recognition.onend = () => {
+                if (isRecording) {
+                    recognition.start();
+                }
+            };
+        }
+
+        function toggleDictation() {
+            if (!recognition) {
+                alert('La reconnaissance vocale n\'est pas supportée sur ce navigateur.');
+                return;
+            }
+
+            if (isRecording) {
+                stopDictation();
+            } else {
+                startDictation();
+            }
+        }
+
+        function startDictation() {
+            isRecording = true;
+            recognition.start();
+            const btn = document.getElementById('dictateBtn');
+            btn.classList.add('recording');
+            btn.innerHTML = '<span class="btn-icon">⏹</span> Stop';
+        }
+
+        function stopDictation() {
+            isRecording = false;
+            recognition.stop();
+            const btn = document.getElementById('dictateBtn');
+            btn.classList.remove('recording');
+            btn.innerHTML = '<span class="btn-icon">🎤</span> Dicter';
+        }
+
+        function selectFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        async function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status loading';
+            statusEl.textContent = 'Upload en cours...';
+
+            try {
+                // Convert to base64
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                // Upload via backend
+                const title = getTodayTitle();
+                const result = await callAPI({
+                    action: 'uploadImage',
+                    title,
+                    imageData: base64,
+                    filename: file.name
+                });
+
+                if (result.success) {
+                    statusEl.className = 'status success';
+                    statusEl.textContent = '✓ Image ajoutée';
+                } else {
+                    throw new Error(result.error?.message || 'Échec de l\'ajout');
+                }
+            } catch (error) {
+                console.error(error);
+                statusEl.className = 'status error';
+                statusEl.textContent = 'Erreur : ' + error.message;
+            }
+
+            event.target.value = '';
+        }
+
         function getTodayTitle() {
             const now = new Date();
             const year = now.getFullYear();

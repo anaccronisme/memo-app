@@ -1,5 +1,6 @@
 const NOTION_TOKEN = process.env.NOTION_TOKEN;
 const DATABASE_ID = process.env.NOTION_DATABASE_ID;
+const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
 
 export default async function handler(req, res) {
   // CORS headers
@@ -215,6 +216,144 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       } else {
         const error = await response.json();
+        return res.status(400).json({ success: false, error });
+      }
+    }
+
+    // Action: append image to page
+    if (action === 'appendImage') {
+      const { imageUrl, caption } = req.body;
+
+      if (!pageId) {
+        return res.status(400).json({ success: false, error: { message: 'pageId is required' } });
+      }
+
+      if (!imageUrl) {
+        return res.status(400).json({ success: false, error: { message: 'imageUrl is required' } });
+      }
+
+      const imageBlock = {
+        object: 'block',
+        type: 'image',
+        image: {
+          type: 'external',
+          external: { url: imageUrl },
+          caption: caption ? [{ type: 'text', text: { content: caption } }] : []
+        }
+      };
+
+      const response = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ children: [imageBlock] })
+      });
+
+      if (response.ok) {
+        return res.status(200).json({ success: true });
+      } else {
+        const error = await response.json();
+        return res.status(400).json({ success: false, error });
+      }
+    }
+
+    // Action: upload image and add to page
+    if (action === 'uploadImage') {
+      const { title, imageData, filename } = req.body;
+
+      if (!imageData) {
+        return res.status(400).json({ success: false, error: { message: 'imageData is required' } });
+      }
+
+      if (!IMGBB_API_KEY) {
+        return res.status(400).json({ success: false, error: { message: 'IMGBB_API_KEY not configured' } });
+      }
+
+      // Upload to imgbb
+      const formData = new URLSearchParams();
+      formData.append('key', IMGBB_API_KEY);
+      formData.append('image', imageData);
+
+      const imgbbResponse = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const imgbbData = await imgbbResponse.json();
+
+      if (!imgbbData.success) {
+        return res.status(400).json({ success: false, error: { message: 'Image upload failed' } });
+      }
+
+      const imageUrl = imgbbData.data.url;
+
+      // Find or create today's page
+      const dbResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}`, {
+        method: 'GET',
+        headers
+      });
+      const dbData = await dbResponse.json();
+
+      let titlePropertyName = 'Name';
+      for (const [propName, propValue] of Object.entries(dbData.properties || {})) {
+        if (propValue.type === 'title') {
+          titlePropertyName = propName;
+          break;
+        }
+      }
+
+      // Find page
+      const queryResponse = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          filter: { property: titlePropertyName, title: { equals: title } },
+          page_size: 1
+        })
+      });
+      const queryData = await queryResponse.json();
+
+      let pageId = queryData.results?.[0]?.id;
+
+      // Create page if not exists
+      if (!pageId) {
+        const createResponse = await fetch('https://api.notion.com/v1/pages', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            parent: { database_id: DATABASE_ID },
+            properties: {
+              [titlePropertyName]: { title: [{ text: { content: title } }] }
+            },
+            children: [
+              { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: 'Notes' } }] } },
+              { object: 'block', type: 'heading_2', heading_2: { rich_text: [{ type: 'text', text: { content: 'Liens' } }] } }
+            ]
+          })
+        });
+        const createData = await createResponse.json();
+        pageId = createData.id;
+      }
+
+      // Add image to page
+      const imageBlock = {
+        object: 'block',
+        type: 'image',
+        image: {
+          type: 'external',
+          external: { url: imageUrl },
+          caption: filename ? [{ type: 'text', text: { content: filename } }] : []
+        }
+      };
+
+      const appendResponse = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ children: [imageBlock] })
+      });
+
+      if (appendResponse.ok) {
+        return res.status(200).json({ success: true, imageUrl });
+      } else {
+        const error = await appendResponse.json();
         return res.status(400).json({ success: false, error });
       }
     }
