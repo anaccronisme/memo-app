@@ -101,7 +101,23 @@ export default async function handler(req, res) {
             [titlePropertyName]: {
               title: [{ text: { content: title } }]
             }
-          }
+          },
+          children: [
+            {
+              object: 'block',
+              type: 'heading_2',
+              heading_2: {
+                rich_text: [{ type: 'text', text: { content: 'Notes' } }]
+              }
+            },
+            {
+              object: 'block',
+              type: 'heading_2',
+              heading_2: {
+                rich_text: [{ type: 'text', text: { content: 'Liens' } }]
+              }
+            }
+          ]
         })
       });
 
@@ -124,12 +140,34 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: { message: 'pageId is required' } });
       }
 
-      let blocks = [];
+      // Get existing blocks to find the right section
+      const blocksResponse = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+        method: 'GET',
+        headers
+      });
+      const blocksData = await blocksResponse.json();
 
+      // Find the section headers
+      const sectionName = (type === 'link') ? 'Liens' : 'Notes';
+      let sectionBlockId = null;
+
+      if (blocksData.results) {
+        for (const block of blocksData.results) {
+          if (block.type === 'heading_2') {
+            const text = block.heading_2.rich_text?.[0]?.plain_text || '';
+            if (text === sectionName) {
+              sectionBlockId = block.id;
+              break;
+            }
+          }
+        }
+      }
+
+      // Create the content block
+      let newBlock;
       if (type === 'link' && url) {
-        // Create a paragraph with a clickable link
         const linkText = content || url;
-        blocks.push({
+        newBlock = {
           object: 'block',
           type: 'paragraph',
           paragraph: {
@@ -143,22 +181,35 @@ export default async function handler(req, res) {
               }
             ]
           }
-        });
+        };
       } else {
-        blocks.push({
+        newBlock = {
           object: 'block',
           type: 'paragraph',
           paragraph: {
             rich_text: [{ type: 'text', text: { content: content } }]
           }
-        });
+        };
       }
 
-      const response = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ children: blocks })
-      });
+      // If section found, add after it; otherwise add at the end
+      let response;
+      if (sectionBlockId) {
+        response = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({
+            children: [newBlock],
+            after: sectionBlockId
+          })
+        });
+      } else {
+        response = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ children: [newBlock] })
+        });
+      }
 
       if (response.ok) {
         return res.status(200).json({ success: true });
