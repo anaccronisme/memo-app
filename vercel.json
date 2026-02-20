@@ -2,10 +2,14 @@
   "version": 2,
   "builds": [
     { "src": "index.html", "use": "@vercel/static" },
+    { "src": "apple-touch-icon.png", "use": "@vercel/static" },
+    { "src": "favicon.png", "use": "@vercel/static" },
     { "src": "api/notion.js", "use": "@vercel/node" }
   ],
   "routes": [
     { "src": "/api/notion", "dest": "/api/notion.js" },
+    { "src": "/apple-touch-icon.png", "dest": "/apple-touch-icon.png" },
+    { "src": "/favicon.png", "dest": "/favicon.png" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
