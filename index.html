@@ -11,33 +11,42 @@
     <title>Note du jour</title>
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.45);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --glass-highlight: rgba(255, 255, 255, 0.8);
-            --glass-shadow: rgba(0, 0, 0, 0.1);
-            --text-primary: rgba(0, 0, 0, 0.85);
-            --text-secondary: rgba(0, 0, 0, 0.55);
+            /* Liquid Glass - Light Mode */
+            --glass-bg: rgba(255, 255, 255, 0.42);
+            --glass-border: rgba(255, 255, 255, 0.55);
+            --glass-highlight: rgba(255, 255, 255, 0.7);
+            --glass-shadow: rgba(0, 0, 0, 0.08);
+            --text-primary: rgba(0, 0, 0, 0.88);
+            --text-secondary: rgba(0, 0, 0, 0.5);
             --accent: rgba(255, 204, 0, 1);
-            --accent-glass: rgba(255, 204, 0, 0.25);
+            --accent-glass: rgba(255, 204, 0, 0.22);
             --success: rgba(52, 199, 89, 0.9);
             --error: rgba(255, 59, 48, 0.9);
+
+            /* Liquid Glass spacing & radii */
+            --radius-container: 44px;
+            --radius-control: 50px;
+            --radius-input: 24px;
+            --spacing-lg: 20px;
+            --spacing-md: 16px;
+            --spacing-sm: 12px;
         }
-        
+
         @media (prefers-color-scheme: dark) {
             :root {
-                --glass-bg: rgba(40, 40, 45, 0.65);
-                --glass-border: rgba(255, 255, 255, 0.15);
-                --glass-highlight: rgba(255, 255, 255, 0.1);
-                --glass-shadow: rgba(0, 0, 0, 0.4);
+                --glass-bg: rgba(38, 38, 42, 0.62);
+                --glass-border: rgba(255, 255, 255, 0.12);
+                --glass-highlight: rgba(255, 255, 255, 0.08);
+                --glass-shadow: rgba(0, 0, 0, 0.35);
                 --text-primary: rgba(255, 255, 255, 0.92);
-                --text-secondary: rgba(255, 255, 255, 0.55);
+                --text-secondary: rgba(255, 255, 255, 0.5);
                 --accent: rgba(255, 214, 10, 1);
-                --accent-glass: rgba(255, 214, 10, 0.3);
+                --accent-glass: rgba(255, 214, 10, 0.25);
                 --success: rgba(50, 215, 75, 1);
                 --error: rgba(255, 69, 58, 1);
             }
         }
-        
+
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
@@ -75,244 +84,216 @@
             min-height: 100vh;
             min-height: 100dvh;
             margin: 0;
-            padding: 20px;
+            padding: 24px;
             display: flex;
             justify-content: center;
             align-items: center;
             background: transparent;
         }
-        
+
         .container {
             position: relative;
             width: 100%;
-            max-width: 420px;
-            padding: 28px;
-            border-radius: 28px;
+            max-width: 400px;
+            padding: 32px;
+            border-radius: var(--radius-container);
             background: var(--glass-bg);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            box-shadow: 
-                0 8px 32px var(--glass-shadow),
-                inset 0 1px 0 var(--glass-highlight),
-                inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(50px) saturate(190%);
+            -webkit-backdrop-filter: blur(50px) saturate(190%);
+            border: 0.5px solid var(--glass-border);
+            box-shadow:
+                0 12px 40px var(--glass-shadow),
+                0 0 0 0.5px rgba(255, 255, 255, 0.1) inset;
             overflow: hidden;
         }
-        
+
         .container::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 50%;
+            height: 45%;
             background: linear-gradient(
                 180deg,
-                rgba(255, 255, 255, 0.15) 0%,
-                rgba(255, 255, 255, 0.05) 40%,
+                rgba(255, 255, 255, 0.12) 0%,
+                rgba(255, 255, 255, 0.04) 50%,
                 transparent 100%
             );
-            border-radius: 28px 28px 0 0;
+            border-radius: var(--radius-container) var(--radius-container) 0 0;
             pointer-events: none;
         }
-        
+
         .header {
             position: relative;
             z-index: 1;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
+            text-align: center;
         }
-        
+
         h1 {
-            margin: 0 0 6px 0;
+            margin: 0 0 8px 0;
             font-family: 'New York', 'New York Large', ui-serif, Georgia, serif;
-            font-size: 32px;
-            font-weight: 500;
+            font-size: 28px;
+            font-weight: 600;
             color: var(--text-primary);
-            letter-spacing: -0.3px;
+            letter-spacing: -0.5px;
         }
-        
+
         .date {
             color: var(--text-secondary);
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 500;
         }
-        
+
+        /* Type selector - Liquid Glass capsule style */
         .type-selector {
             position: relative;
             z-index: 1;
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: var(--radius-control);
         }
-        
+
+        @media (prefers-color-scheme: dark) {
+            .type-selector {
+                background: rgba(255, 255, 255, 0.04);
+            }
+        }
+
         .type-btn {
             position: relative;
             flex: 1;
-            padding: 12px 20px;
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            padding: 14px 24px;
+            border: none;
+            border-radius: calc(var(--radius-control) - 4px);
+            background: transparent;
             font-size: 15px;
             font-weight: 600;
             color: var(--text-secondary);
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
-        
-        @media (prefers-color-scheme: dark) {
-            .type-btn {
-                background: rgba(255, 255, 255, 0.08);
-            }
+
+        .type-btn:hover {
+            color: var(--text-primary);
         }
-        
-        .type-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
-            border-radius: 16px 16px 0 0;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .type-btn:hover::before {
-            opacity: 1;
-        }
-        
+
         .type-btn.active {
-            background: var(--accent-glass);
-            border-color: var(--accent);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             color: var(--text-primary);
             box-shadow:
-                0 4px 16px rgba(255, 204, 0, 0.25),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                0 4px 20px rgba(0, 0, 0, 0.08),
+                0 0 0 0.5px rgba(255, 255, 255, 0.2) inset;
         }
-        
-        .type-btn.active::before {
-            opacity: 1;
-        }
-        
+
         .input-group {
             position: relative;
             z-index: 1;
         }
-        
+
         .url-input {
             display: none;
-            margin-bottom: 14px;
+            margin-bottom: var(--spacing-md);
         }
-        
+
         .url-input.visible {
             display: block;
         }
-        
+
         .url-input input,
         textarea {
             width: 100%;
-            padding: 16px 18px;
-            border: 1px solid var(--glass-border);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            font-size: 16px;
+            padding: 18px 22px;
+            border: 0.5px solid var(--glass-border);
+            border-radius: var(--radius-input);
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            font-size: 17px;
             font-family: inherit;
             color: var(--text-primary);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
         }
-        
+
         @media (prefers-color-scheme: dark) {
             .url-input input,
             textarea {
-                background: rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.06);
             }
         }
-        
+
         textarea {
-            height: 140px;
+            height: 130px;
             resize: none;
-            line-height: 1.5;
+            line-height: 1.55;
         }
-        
+
         .url-input input::placeholder,
         textarea::placeholder {
             color: var(--text-secondary);
         }
-        
+
         .url-input input:focus,
         textarea:focus {
             outline: none;
             border-color: var(--accent);
-            background: rgba(255, 255, 255, 0.5);
-            box-shadow: 
-                0 0 0 4px rgba(255, 204, 0, 0.15),
-                inset 0 1px 2px rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 0 0 4px rgba(255, 204, 0, 0.12);
         }
-        
+
         @media (prefers-color-scheme: dark) {
             .url-input input:focus,
             textarea:focus {
-                background: rgba(255, 255, 255, 0.12);
+                background: rgba(255, 255, 255, 0.1);
             }
         }
-        
+
+        /* Button rows - Liquid Glass */
         .button-row {
             position: relative;
             z-index: 1;
             display: flex;
-            gap: 12px;
-            margin-top: 18px;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
         }
-        
+
         button.action-btn {
             position: relative;
             flex: 1;
-            padding: 16px 24px;
+            padding: 18px 28px;
             border: none;
-            border-radius: 18px;
-            font-size: 16px;
+            border-radius: var(--radius-control);
+            font-size: 17px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
-        
-        button.action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%);
-            border-radius: 18px 18px 0 0;
-            pointer-events: none;
-        }
-        
+
         button.action-btn:active {
-            transform: scale(0.97);
+            transform: scale(0.96);
         }
-        
+
         button.action-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
-        
+
+        /* Primary button - Prominent Liquid Glass style */
         .btn-primary {
             background: linear-gradient(180deg, #FFD60A 0%, #FFCC00 100%);
-            color: rgba(0, 0, 0, 0.85);
+            color: rgba(0, 0, 0, 0.88);
             box-shadow:
-                0 4px 16px rgba(255, 204, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+                0 6px 24px rgba(255, 204, 0, 0.35),
+                0 0 0 0.5px rgba(255, 255, 255, 0.3) inset;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -321,52 +302,59 @@
                 color: rgba(0, 0, 0, 0.9);
             }
         }
-        
+
         .btn-primary:hover {
-            box-shadow: 
-                0 6px 24px rgba(255, 204, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            box-shadow:
+                0 8px 32px rgba(255, 204, 0, 0.45),
+                0 0 0 0.5px rgba(255, 255, 255, 0.3) inset;
+            transform: translateY(-1px);
         }
-        
+
+        .btn-primary:active {
+            transform: scale(0.96) translateY(0);
+        }
+
+        /* Status - Liquid Glass style */
         .status {
             position: relative;
             z-index: 1;
-            margin-top: 18px;
-            padding: 14px 18px;
-            border-radius: 14px;
+            margin-top: var(--spacing-lg);
+            padding: 16px 20px;
+            border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
             display: none;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            text-align: center;
         }
-        
+
         .status.success {
-            background: rgba(255, 214, 10, 0.15);
-            border: 1px solid rgba(255, 214, 10, 0.4);
+            background: rgba(255, 214, 10, 0.12);
+            border: 0.5px solid rgba(255, 214, 10, 0.35);
             color: var(--accent);
             display: block;
         }
-        
+
         .status.error {
-            background: rgba(255, 59, 48, 0.15);
-            border: 1px solid rgba(255, 59, 48, 0.3);
+            background: rgba(255, 59, 48, 0.1);
+            border: 0.5px solid rgba(255, 59, 48, 0.25);
             color: var(--error);
             display: block;
         }
-        
+
         .status.loading {
             background: var(--accent-glass);
-            border: 1px solid rgba(255, 204, 0, 0.4);
+            border: 0.5px solid rgba(255, 204, 0, 0.35);
             color: var(--text-primary);
             display: block;
         }
-        
+
         @keyframes shimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
         }
-        
+
         .status.loading::after {
             content: '';
             position: absolute;
@@ -377,47 +365,57 @@
             background: linear-gradient(
                 90deg,
                 transparent 0%,
-                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0.08) 50%,
                 transparent 100%
             );
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite;
-            border-radius: 14px;
+            border-radius: 20px;
             pointer-events: none;
         }
-        
+
         @supports (padding: max(0px)) {
             body {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-top: max(20px, env(safe-area-inset-top));
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-left: max(24px, env(safe-area-inset-left));
+                padding-right: max(24px, env(safe-area-inset-right));
+                padding-top: max(24px, env(safe-area-inset-top));
+                padding-bottom: max(24px, env(safe-area-inset-bottom));
             }
         }
 
+        /* Secondary actions - Liquid Glass grouped */
         .secondary-actions {
-            gap: 10px;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
         }
 
         .btn-secondary {
             flex: 1;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             color: var(--text-primary);
-            border: 1px solid var(--glass-border);
-            font-size: 14px;
-            padding: 12px 16px;
+            border: 0.5px solid var(--glass-border);
+            font-size: 15px;
+            padding: 14px 20px;
+            box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1) inset;
         }
 
         @media (prefers-color-scheme: dark) {
             .btn-secondary {
-                background: rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.06);
             }
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-1px);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-secondary:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
         }
 
         .btn-secondary.recording {
@@ -428,18 +426,19 @@
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            50% { opacity: 0.75; }
         }
 
         .notion-link {
             position: relative;
             z-index: 1;
             display: block;
-            margin-top: 18px;
+            margin-top: var(--spacing-lg);
             text-align: center;
             font-size: 14px;
             color: var(--text-secondary);
             text-decoration: none;
+            transition: color 0.2s;
         }
 
         .notion-link:hover {
@@ -450,10 +449,11 @@
         .footer {
             position: relative;
             z-index: 1;
-            margin-top: 24px;
+            margin-top: 28px;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-secondary);
+            opacity: 0.8;
         }
 
     </style>
