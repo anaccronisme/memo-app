@@ -235,24 +235,38 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: blocksData.error, message: blocksData.message });
       }
 
+      // Check if sections exist
+      const blocks = blocksData.results || [];
+      const hasSections = blocks.some(b =>
+        b.type === 'heading_2' &&
+        ['Notes', 'Liens'].includes(b.heading_2.rich_text?.[0]?.plain_text)
+      );
+
       // Parse blocks into notes and links
       const notes = [];
       const links = [];
-      let currentSection = null;
+      let currentSection = hasSections ? null : 'auto';
 
-      for (const block of blocksData.results || []) {
+      for (const block of blocks) {
         if (block.type === 'heading_2') {
           const text = block.heading_2.rich_text?.[0]?.plain_text || '';
           if (text === 'Notes') currentSection = 'notes';
           else if (text === 'Liens') currentSection = 'links';
-          else currentSection = null;
+          else currentSection = hasSections ? null : 'auto';
         } else if (block.type === 'paragraph' && currentSection) {
           const richText = block.paragraph.rich_text || [];
           if (richText.length > 0) {
             const text = richText[0].plain_text || '';
             const link = richText[0].text?.link?.url || null;
 
-            if (currentSection === 'notes') {
+            if (currentSection === 'auto') {
+              // Auto-detect: if has link -> links, otherwise -> notes
+              if (link) {
+                links.push({ text, url: link });
+              } else {
+                notes.push({ text });
+              }
+            } else if (currentSection === 'notes') {
               notes.push({ text });
             } else if (currentSection === 'links') {
               links.push({ text, url: link });
