@@ -726,18 +726,22 @@
         
         async function openInNotion() {
             const title = getTodayTitle();
+            const statusEl = document.getElementById('status');
             let pageId = currentPageId;
-            
+
             if (!pageId) {
+                statusEl.className = 'status loading';
+                statusEl.textContent = 'Recherche...';
                 const result = await callAPI({ action: 'findPage', title });
                 pageId = result.pageId;
+                statusEl.className = 'status';
+                statusEl.textContent = '';
             }
-            
+
             if (pageId) {
                 const cleanId = pageId.replace(/-/g, '');
-                window.open(`https://notion.so/${cleanId}`, '_blank');
+                window.location.href = `https://notion.so/${cleanId}`;
             } else {
-                const statusEl = document.getElementById('status');
                 statusEl.className = 'status error';
                 statusEl.textContent = 'Pas de note pour aujourd\'hui. Envoie quelque chose d\'abord !';
             }
